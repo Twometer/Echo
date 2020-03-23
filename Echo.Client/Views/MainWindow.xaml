@@ -4,14 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="680" Height="450"
         x:Class="Echo.Client.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Echo.Client">
+        Title="Echo 0.1.0"
+        WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="1*"></ColumnDefinition>
+      <ColumnDefinition Width="2*"></ColumnDefinition>
+      <ColumnDefinition Width="1*"></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
+    </Grid.RowDefinitions>
+    <ListBox x:Name="ChannelList" Grid.Column="0" BorderThickness="0"/>
+    <ListBox x:Name="MessageList" Grid.Column="1" BorderThickness="0"/>
+    <ListBox x:Name="UserList" Grid.Column="2" BorderThickness="0"/>
+    <TextBlock x:Name="StatusLabel" Text="Not connected" Grid.Column="0" Grid.Row="1"/>
+  </Grid>
 </Window>

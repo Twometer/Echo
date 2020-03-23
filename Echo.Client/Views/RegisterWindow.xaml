@@ -1,0 +1,42 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Echo.Client.Views.RegisterWindow"
+        Title="Create new account"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid Margin="25">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="250"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock Text="Welcome to Echo" Grid.Row="0" Margin="0,15" FontSize="21" Grid.ColumnSpan="2"/>
+
+    <TextBlock Grid.Row="1" Grid.Column="0" Text="Nickname:" VerticalAlignment="Center"/>
+    <TextBox Grid.Row="1" Grid.Column="1" Margin="5"/>
+
+    <TextBlock Grid.Row="2" Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
+    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" PasswordChar="*"/>
+
+    <TextBlock Grid.Row="3" Grid.Column="0" Text="Confirm:" VerticalAlignment="Center"/>
+    <TextBox Grid.Row="3" Grid.Column="1" Margin="5" PasswordChar="*"/>
+    
+
+    <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Margin="5" Content="Cancel" />
+      <Button Margin="5" Content="Create account" />
+    </StackPanel>
+  </Grid>
+</Window>

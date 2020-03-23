@@ -14,8 +14,29 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
+    <AvaloniaResource Remove="Views\LoginWindow.xaml" />
+    <AvaloniaResource Remove="Views\RegisterWindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\LoginWindow.xaml" />
+    <None Remove="Views\RegisterWindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.4" />
     <PackageReference Include="Avalonia.Desktop" Version="0.9.4" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\LoginWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\RegisterWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Echo.Network\Echo.Network.csproj" />
   </ItemGroup>
 </Project>

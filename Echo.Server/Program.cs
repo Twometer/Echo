@@ -19,6 +19,8 @@ namespace Echo
             while (true)
             {
                 var tcp = await listener.AcceptTcpClientAsync();
+                Console.WriteLine("Incoming connection from " + tcp.Client.RemoteEndPoint);
+
                 var client = new Client(tcp);
                 clients[client.Id] = client;
                 client.BeginReading();
