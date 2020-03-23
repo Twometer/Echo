@@ -3,42 +3,62 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Echo.Network
 {
     public class PacketStream : IDisposable
     {
         private readonly Stream baseStream;
-        private readonly BinaryWriter binaryWriter;
-        private readonly BinaryReader binaryReader;
 
         public PacketStream(Stream baseStream)
         {
             this.baseStream = baseStream;
-            this.binaryWriter = new BinaryWriter(baseStream);
-            this.binaryReader = new BinaryReader(baseStream);
         }
 
-        public void WritePacket(IPacket packet)
+        public async Task WritePacket(IPacket packet)
         {
             var jsonData = JsonConvert.SerializeObject(packet);
             var binaryData = Encoding.UTF8.GetBytes(jsonData);
-            binaryWriter.Write(binaryData.Length);
-            binaryWriter.Write(packet.Id);
-            binaryWriter.Write(binaryData);
+            await WriteInt(binaryData.Length);
+            await WriteInt(packet.Id);
+            await WriteBytes(binaryData);
         }
 
-        public IPacket ReadPacket()
+        public async Task<IPacket> ReadPacket()
         {
-            var dataLen = binaryReader.ReadInt32();
-            var packetId = binaryReader.ReadInt32();
+            var dataLen = await ReadInt();
+            var packetId = await ReadInt();
             var packetType = PacketRegistry.FindPacketType(packetId);
 
-            var data = new byte[dataLen];
-            binaryReader.Read(data, 0, data.Length);
-            var json = Encoding.UTF8.GetString(data);
+            var json = Encoding.UTF8.GetString(await ReadBytes(dataLen));
 
             return (IPacket) JsonConvert.DeserializeObject(json, packetType);
+        }
+
+        private Task WriteBytes(byte[] data)
+        {
+            return baseStream.WriteAsync(data, 0, data.Length);
+        }
+
+        private async Task<byte[]> ReadBytes(int len)
+        {
+            var data = new byte[len];
+            await baseStream.ReadAsync(data, 0, len);
+            return data;
+        }
+
+        private Task WriteInt(int i)
+        {
+            var buf = BitConverter.GetBytes(i);
+            return baseStream.WriteAsync(buf, 0, buf.Length);
+        }
+
+        private async Task<int> ReadInt()
+        {
+            var buf = new byte[4];
+            await baseStream.ReadAsync(buf, 0, buf.Length);
+            return BitConverter.ToInt32(buf, 0);
         }
 
         #region IDisposable Support
@@ -52,8 +72,6 @@ namespace Echo.Network
                 {
                     // TODO: dispose managed state (managed objects).
                     baseStream.Dispose();
-                    binaryWriter.Dispose();
-                    binaryReader.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

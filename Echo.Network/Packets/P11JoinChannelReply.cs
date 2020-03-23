@@ -12,6 +12,8 @@ namespace Echo.Network.Packets
 
         public string VoiceUrl { get; set; }
 
+        public string UdpToken { get; set; }
+
 
         public enum StatusCode
         {
