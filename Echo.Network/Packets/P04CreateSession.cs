@@ -8,5 +8,8 @@ namespace Echo.Network.Packets
     {
         public int Id => 4;
 
+        public string EchoTag { get; set; }
+
+        public byte[] KeyHash { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Echo.Network.Packets
     {
         public int Id => 2;
 
-        public string AccountName { get; set; }
+        public string Nickname { get; set; }
 
         public byte[] PasswordHash { get; set; }
     }
