@@ -8,9 +8,9 @@ namespace Echo.Network
 {
     public class PacketStream : IDisposable
     {
-        private Stream baseStream;
-        private BinaryWriter binaryWriter;
-        private BinaryReader binaryReader;
+        private readonly Stream baseStream;
+        private readonly BinaryWriter binaryWriter;
+        private readonly BinaryReader binaryReader;
 
         public PacketStream(Stream baseStream)
         {
