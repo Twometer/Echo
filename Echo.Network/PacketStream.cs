@@ -30,6 +30,10 @@ namespace Echo.Network
             var dataLen = await ReadInt();
             var packetId = await ReadInt();
             var packetType = PacketRegistry.FindPacketType(packetId);
+            if (packetType == null)
+            {
+                throw new Exception("Protocol error: bad packet " + packetId);
+            }
 
             var json = Encoding.UTF8.GetString(await ReadBytes(dataLen));
 

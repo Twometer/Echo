@@ -49,6 +49,9 @@ namespace Echo.Client.Network
             while (tcpClient.Connected)
             {
                 var packet = await packetStream.ReadPacket();
+                if (packet == null)
+                    break;
+
                 foreach (var response in waitingResponses.Reverse())
                 {
                     if (packet.GetType() == response.type)
@@ -58,6 +61,7 @@ namespace Echo.Client.Network
                     }
                 }
             }
+            Console.WriteLine("Lost connection");
         }
 
         private async Task<T> AwaitPacket<T>() where T : IPacket
