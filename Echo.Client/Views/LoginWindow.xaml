@@ -24,10 +24,10 @@
     <TextBlock Text="Login to Echo" Grid.Row="0" Margin="0,15" FontSize="21" Grid.ColumnSpan="2"/>
     
     <TextBlock Grid.Row="1" Grid.Column="0" Text="Echo tag:" VerticalAlignment="Center"/>
-    <TextBox Grid.Row="1" Grid.Column="1" Margin="5"/>
+    <TextBox Name="EchoTagBox" Grid.Row="1" Grid.Column="1" Margin="5"/>
     
     <TextBlock Grid.Row="2" Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
-    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" PasswordChar="*"/>
+    <TextBox Name="PasswordBox" Grid.Row="2" Grid.Column="1" Margin="5" PasswordChar="*"/>
 
     <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
       <Button Name="RegisterButton" Margin="5" Content="No account?" />

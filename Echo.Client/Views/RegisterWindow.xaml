@@ -25,18 +25,18 @@
     <TextBlock Text="Welcome to Echo" Grid.Row="0" Margin="0,15" FontSize="21" Grid.ColumnSpan="2"/>
 
     <TextBlock Grid.Row="1" Grid.Column="0" Text="Nickname:" VerticalAlignment="Center"/>
-    <TextBox Grid.Row="1" Grid.Column="1" Margin="5"/>
+    <TextBox Name="NicknameBox" Grid.Row="1" Grid.Column="1" Margin="5"/>
 
     <TextBlock Grid.Row="2" Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
-    <TextBox Grid.Row="2" Grid.Column="1" Margin="5" PasswordChar="*"/>
+    <TextBox Name="PasswordBox" Grid.Row="2" Grid.Column="1" Margin="5" PasswordChar="*"/>
 
     <TextBlock Grid.Row="3" Grid.Column="0" Text="Confirm:" VerticalAlignment="Center"/>
-    <TextBox Grid.Row="3" Grid.Column="1" Margin="5" PasswordChar="*"/>
+    <TextBox Name="PasswordConfirmBox" Grid.Row="3" Grid.Column="1" Margin="5" PasswordChar="*"/>
     
 
     <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
-      <Button Margin="5" Content="Cancel" />
-      <Button Margin="5" Content="Create account" />
+      <Button Name="CancelButton" Margin="5" Content="Cancel" />
+      <Button Name="CreateButton" Margin="5" Content="Create account" />
     </StackPanel>
   </Grid>
 </Window>
