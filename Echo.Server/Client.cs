@@ -100,6 +100,14 @@ namespace Echo.Server
             {
                 if (!Storage.Channels.ContainsKey(p.ChannelId))
                     throw new Exception("Protocol error [10]: Channel does not exist");
+                var channel = Storage.Channels[p.ChannelId];
+                if (channel.Type != Channel.ChannelType.Voice)
+                {
+                    _ = packetStream.WritePacket(new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.InvalidChannel });
+                    return;
+                }
+                var reply = new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.Ok, UdpToken = Guid.NewGuid().ToString(), VoiceUrl = $"udp://localhost:{NetConfig.UdpPort}/{channel.Name}" };
+                _ = packetStream.WritePacket(reply);
             });
         }
 

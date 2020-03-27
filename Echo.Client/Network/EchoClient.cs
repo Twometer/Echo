@@ -1,4 +1,5 @@
-﻿using Echo.Network;
+﻿using Echo.Client.Network.Voice;
+using Echo.Network;
 using Echo.Network.Model;
 using Echo.Network.Packets;
 using Echo.Network.Util;
@@ -19,6 +20,8 @@ namespace Echo.Client.Network
 
         public UserInfo UserInfo { get; private set; }
 
+        public VoiceClient VoiceClient { get; set; }
+
         public const int Version = 1;
 
         public event EventHandler ServerInfoChanged;
@@ -35,7 +38,7 @@ namespace Echo.Client.Network
                 return;
 
             tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(endpoint, NetConfig.Port);
+            await tcpClient.ConnectAsync(endpoint, NetConfig.TcpPort);
             packetStream = new PacketStream(tcpClient.GetStream());
             BeginReading();
             await SendPacket(new P00Handshake() { Version = Version });

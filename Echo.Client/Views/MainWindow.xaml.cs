@@ -2,7 +2,10 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Echo.Client.Network;
+using Echo.Client.Network.Voice;
 using Echo.Client.Util;
+using Echo.Network.Model;
+using Echo.Network.Packets;
 using MessageBox.Avalonia;
 using System.Collections.Generic;
 
@@ -37,7 +40,40 @@ namespace Echo.Client.Views
             serverLabel = this.FindControl<TextBlock>("ServerLabel");
             Initialize();
 
+            channelList.DoubleTapped += ChannelList_DoubleTapped;
+
             EchoClient.Instance.ServerInfoChanged += Client_ServerInfoChanged;
+        }
+
+        private async void ChannelList_DoubleTapped(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (channelList.SelectedItem is Channel channel)
+            {
+                statusLabel.Text = "Joining channel...";
+                P11JoinChannelReply reply = await EchoClient.Instance.SendRequest<P11JoinChannelReply>(new P10JoinChannel() { ChannelId = channel.ChannelId });
+                if (reply.Status == P11JoinChannelReply.StatusCode.Unauthorized)
+                {
+                    statusLabel.Text = "Insufficient permissions";
+                }
+                else if (reply.Status == P11JoinChannelReply.StatusCode.InvalidChannel)
+                {
+                    statusLabel.Text = "Invalid channel";
+                }
+                else if (reply.Status == P11JoinChannelReply.StatusCode.Ok)
+                {
+                    statusLabel.Text = "Connecting voice... [" + reply.VoiceUrl + "; " + reply.UdpToken + "]";
+                    EchoClient.Instance.VoiceClient = new VoiceClient(reply.VoiceUrl, reply.UdpToken);
+                    var ok = await EchoClient.Instance.VoiceClient.Connect();
+                    if (ok)
+                    {
+                        statusLabel.Text = "Voice connection established";
+                    }
+                    else
+                    {
+                        statusLabel.Text = "Failed to connect voice";
+                    }
+                }
+            }
         }
 
         private void Client_ServerInfoChanged(object sender, System.EventArgs e)

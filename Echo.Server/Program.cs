@@ -20,7 +20,7 @@ namespace Echo
 
         private static async Task AsyncMain()
         {
-            var listener = new TcpListener(IPAddress.Any, NetConfig.Port);
+            var listener = new TcpListener(IPAddress.Any, NetConfig.TcpPort);
             listener.Start();
             Console.WriteLine("Echo server online");
 

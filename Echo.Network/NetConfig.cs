@@ -6,6 +6,7 @@ namespace Echo.Network
 {
     public static class NetConfig
     {
-        public const int Port = 13371;
+        public const int TcpPort = 13371;
+        public const int UdpPort = 13372;
     }
 }
