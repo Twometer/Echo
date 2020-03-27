@@ -24,6 +24,12 @@ namespace Echo
             listener.Start();
             Console.WriteLine("Echo server online");
 
+            var ch = Guid.NewGuid();
+            Storage.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default voice channel", Name = "voice", Type = Network.Model.Channel.ChannelType.Voice };
+
+            ch = Guid.NewGuid();
+            Storage.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default text channel", Name = "default", Type = Network.Model.Channel.ChannelType.Text };
+
             while (true)
             {
                 var tcp = await listener.AcceptTcpClientAsync();
@@ -34,6 +40,12 @@ namespace Echo
 
                 client.BeginReading();
             }
+        }
+
+        internal static void Broadcast(IPacket packet)
+        {
+            foreach (var kvp in clients)
+                kvp.Value.SendPacket(packet);
         }
 
         internal static void RemoveClient(Client client)

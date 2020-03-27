@@ -1,4 +1,5 @@
 ﻿using Echo.Network;
+using Echo.Network.Model;
 using Echo.Network.Packets;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace Echo.Server
         private bool authenticated;
 
         private Random random = new Random();
+
+        private Account currentAccount;
 
         public Client(TcpClient tcpClient)
         {
@@ -78,14 +81,21 @@ namespace Echo.Server
                 var authenticated = Storage.Accounts.ContainsKey(p.EchoTag) && SequenceEqual(Storage.Accounts[p.EchoTag].PasswordHash, p.KeyHash);
                 this.authenticated = authenticated;
                 _ = packetStream.WritePacket(new P05CreateSessionReply() { Authenticated = authenticated });
+                _ = packetStream.WritePacket(new P06Sync() { Channels = Storage.Channels.Values });
             });
-            packetHandler.Handle<P09ChatMessageIn>(p =>
+            packetHandler.Handle<P07ChatMessageOut>(p =>
             {
+                if (!Storage.Channels.ContainsKey(p.ChannelId))
+                    throw new Exception("Protocol error [07]: Channel does not exist");
 
+                var message = new Message() { SendDate = DateTime.Now, ChannelId = p.ChannelId, Content = p.Content, MessageId = Guid.NewGuid(), SenderId = currentAccount.Id };
+                _ = packetStream.WritePacket(new P08ChatMessageOutReply() { Nonce = p.Nonce, MessageId = message.MessageId });
+                Program.Broadcast(new P09ChatMessageIn() { Message = message });
             });
             packetHandler.Handle<P10JoinChannel>(p =>
             {
-
+                if (!Storage.Channels.ContainsKey(p.ChannelId))
+                    throw new Exception("Protocol error [10]: Channel does not exist");
             });
         }
 
@@ -111,6 +121,11 @@ namespace Echo.Server
                 if (a[i] != b[i])
                     return false;
             return true;
+        }
+
+        public void SendPacket(IPacket packet)
+        {
+            _ = packetStream.WritePacket(packet);
         }
     }
 }
