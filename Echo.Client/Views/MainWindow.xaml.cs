@@ -6,6 +6,7 @@ using Echo.Client.Network.Voice;
 using Echo.Client.Util;
 using Echo.Network.Model;
 using Echo.Network.Packets;
+using Echo.Network.Packets.Tcp;
 using MessageBox.Avalonia;
 using System.Collections.Generic;
 

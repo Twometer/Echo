@@ -1,17 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using Echo.Network.Base;
+using Echo.Network.Packets.Registry;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Echo.Network
+namespace Echo.Network.Streams
 {
-    public class PacketStream : IDisposable
+    public class TcpPacketStream : IDisposable, IPacketStream
     {
         private readonly Stream baseStream;
 
-        public PacketStream(Stream baseStream)
+        public TcpPacketStream(Stream baseStream)
         {
             this.baseStream = baseStream;
         }
@@ -29,7 +31,7 @@ namespace Echo.Network
         {
             var dataLen = await ReadInt();
             var packetId = await ReadInt();
-            var packetType = PacketRegistry.FindPacketType(packetId);
+            var packetType = PacketRegistries.Tcp.FindPacketType(packetId);
             if (packetType == null)
             {
                 throw new Exception("Protocol error: bad packet " + packetId);
@@ -45,7 +47,7 @@ namespace Echo.Network
             return baseStream.WriteAsync(data, 0, data.Length);
         }
 
-        public async Task<byte[]> ReadBytes(int len)
+        private async Task<byte[]> ReadBytes(int len)
         {
             var data = new byte[len];
             await baseStream.ReadAsync(data, 0, len);
@@ -58,7 +60,7 @@ namespace Echo.Network
             return baseStream.WriteAsync(buf, 0, buf.Length);
         }
 
-        public async Task<int> ReadInt()
+        private async Task<int> ReadInt()
         {
             var buf = new byte[4];
             await baseStream.ReadAsync(buf, 0, buf.Length);

@@ -1,6 +1,9 @@
 ﻿using Echo.Network;
+using Echo.Network.Base;
 using Echo.Network.Model;
 using Echo.Network.Packets;
+using Echo.Network.Packets.Tcp;
+using Echo.Network.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +17,7 @@ namespace Echo.Server
         public Guid Id { get; } = Guid.NewGuid();
 
         private TcpClient tcpClient;
-        private PacketStream packetStream;
+        private IPacketStream packetStream;
         private PacketHandler packetHandler;
 
         private const int Version = 1;
@@ -28,7 +31,7 @@ namespace Echo.Server
         public Client(TcpClient tcpClient)
         {
             this.tcpClient = tcpClient;
-            this.packetStream = new PacketStream(tcpClient.GetStream());
+            this.packetStream = new TcpPacketStream(tcpClient.GetStream());
             this.packetHandler = new PacketHandler();
             RegisterHandlers();
         }
@@ -79,10 +82,26 @@ namespace Echo.Server
                 if (this.authenticated)
                     throw new Exception("Protocol error [04]: Already logged in");
 
-                var authenticated = Storage.Accounts.ContainsKey(p.EchoTag) && SequenceEqual(Storage.Accounts[p.EchoTag].PasswordHash, p.KeyHash);
-                this.authenticated = authenticated;
+                bool CheckAuthenticated()
+                {
+                    if (!Storage.Accounts.ContainsKey(p.EchoTag))
+                        return false;
+                    var account = Storage.Accounts[p.EchoTag];
+                    if (SequenceEqual(account.PasswordHash, p.KeyHash))
+                    {
+                        currentAccount = account;
+                        return true;
+                    }
+                    return false;
+                }
+
+                authenticated = CheckAuthenticated();
 
                 _ = packetStream.WritePacket(new P05CreateSessionReply() { Authenticated = authenticated });
+
+                if (!authenticated)
+                    return;
+
                 var users = Storage.Accounts.Values.Select(acc => new User() { Id = acc.Id, EchoTag = acc.Tag, State = User.OnlineState.Online });
                 var info = new ServerInfo() { ServerName = Storage.ServerName, Channels = Storage.Channels.Values, Users = users };
                 _ = packetStream.WritePacket(new P06Sync() { ServerInfo = info });

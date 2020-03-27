@@ -1,4 +1,7 @@
 ﻿using Echo.Network;
+using Echo.Network.Base;
+using Echo.Network.Packets.Udp;
+using Echo.Network.Streams;
 using Echo.Server;
 using System;
 using System.Collections.Concurrent;
@@ -48,30 +51,18 @@ namespace Echo
             }
         }
 
-        private static void RunUdp()
+        private async static void RunUdp()
         {
-            var udp = new Socket(SocketType.Dgram, ProtocolType.Udp);
-            udp.Bind(new IPEndPoint(IPAddress.Any, NetConfig.UdpPort));
+            var udp = new UdpClient(new IPEndPoint(IPAddress.Any, NetConfig.UdpPort));
+            var stream = new UdpPacketStream(udp);
 
-            var frame = new byte[8192];
             while (true)
             {
-                var remote = new IPEndPoint(IPAddress.Any, 0) as EndPoint;
-                var received = udp.ReceiveFrom(frame, ref remote);
-
-                var memStream = new MemoryStream(frame);
-                var wr = new BinaryReader(memStream);
-                var packetNum = wr.ReadInt32();
-                var packetId = wr.ReadInt32();
-                var packetLen = wr.ReadInt32();
-
-                if (received > packetLen + 12)
+                var packet = await stream.ReadPacket() as UdpPacket;
+                if (packet is U00Handshake handshake)
                 {
-                    Console.WriteLine($"Warn: UDP: length mismatch, received={received}, packetLength={packetLen}");
+                    Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Sender);
                 }
-
-                var packetContent = wr.ReadBytes(packetLen);
-                Console.WriteLine("packet #" + packetNum + " ~" + packetId + " datalen=" + packetLen + ", " + Encoding.UTF8.GetString(packetContent));
             }
         }
 

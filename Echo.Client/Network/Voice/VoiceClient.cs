@@ -1,4 +1,7 @@
 ﻿using Echo.Network;
+using Echo.Network.Base;
+using Echo.Network.Packets.Udp;
+using Echo.Network.Streams;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +16,9 @@ namespace Echo.Client.Network.Voice
         private string url;
         private string token;
 
+        private UdpClient udpClient;
+        private IPacketStream packetStream;
+
         public VoiceClient(string url, string token)
         {
             this.url = url;
@@ -21,22 +27,11 @@ namespace Echo.Client.Network.Voice
 
         public async Task<bool> Connect()
         {
-            var udpClient = new UdpClient();
+            udpClient = new UdpClient();
             udpClient.Connect(Constants.Host, NetConfig.UdpPort);
+            packetStream = new UdpPacketStream(udpClient);
 
-            var memStream = new MemoryStream();
-            var wr = new BinaryWriter(memStream);
-            wr.Write(0);
-            wr.Write(4);
-
-            var payload = Encoding.UTF8.GetBytes("ThisIsATestMessageFromTheUdpStreamLetsSeeHowWellThisWorks");
-
-            wr.Write(payload.Length);
-            wr.Write(payload);
-
-            var data = memStream.ToArray();
-            await udpClient.SendAsync(data, data.Length);
-
+            await packetStream.WritePacket(new U00Handshake() { Token = token });
             return true;
         }
 

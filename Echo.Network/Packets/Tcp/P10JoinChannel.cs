@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Echo.Network.Packets
+namespace Echo.Network.Packets.Tcp
 {
     public class P10JoinChannel : IPacket
     {

@@ -1,12 +1,14 @@
-﻿using Echo.Network.Packets;
+﻿using Echo.Network.Base;
+using Echo.Network.Packets;
+using Echo.Network.Packets.Tcp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Echo.Network
+namespace Echo.Network.Packets.Registry
 {
-    public class PacketRegistry
+    public class TcpPacketRegistry : IPacketRegistry<IPacket>
     {
         private static IPacket[] registeredPackets = {
             new P00Handshake(),
@@ -23,7 +25,7 @@ namespace Echo.Network
             new P11JoinChannelReply()
         };
 
-        public static Type FindPacketType(int id)
+        public Type FindPacketType(int id)
         {
             return registeredPackets.Where(p => p.Id == id).SingleOrDefault()?.GetType();
         }

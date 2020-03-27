@@ -1,7 +1,10 @@
 ﻿using Echo.Client.Network.Voice;
 using Echo.Network;
+using Echo.Network.Base;
 using Echo.Network.Model;
 using Echo.Network.Packets;
+using Echo.Network.Packets.Tcp;
+using Echo.Network.Streams;
 using Echo.Network.Util;
 using System;
 using System.Collections.Generic;
@@ -28,7 +31,7 @@ namespace Echo.Client.Network
 
         private TcpClient tcpClient;
 
-        private PacketStream packetStream;
+        private IPacketStream packetStream;
 
         private IList<(Type type, TaskCompletionSource<IPacket> tcs)> waitingResponses = new List<(Type type, TaskCompletionSource<IPacket> tcs)>();
 
@@ -39,7 +42,7 @@ namespace Echo.Client.Network
 
             tcpClient = new TcpClient();
             await tcpClient.ConnectAsync(endpoint, NetConfig.TcpPort);
-            packetStream = new PacketStream(tcpClient.GetStream());
+            packetStream = new TcpPacketStream(tcpClient.GetStream());
             BeginReading();
             await SendPacket(new P00Handshake() { Version = Version });
         }

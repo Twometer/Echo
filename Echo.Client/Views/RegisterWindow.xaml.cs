@@ -5,6 +5,7 @@ using Echo.Client.Network;
 using Echo.Network.Packets;
 using Echo.Network.Util;
 using Echo.Client.Util;
+using Echo.Network.Packets.Tcp;
 
 namespace Echo.Client.Views
 {
