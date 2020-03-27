@@ -61,7 +61,16 @@ namespace Echo
                 var packet = await stream.ReadPacket() as UdpPacket;
                 if (packet is U00Handshake handshake)
                 {
-                    Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Sender);
+                    var clientId = Guid.Parse(handshake.Token);
+                    if (!clients.ContainsKey(clientId))
+                    {
+                        Console.WriteLine("Invalid access token: " + clientId);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Sender);
+                        clients[clientId].UdpEndpoint = packet.Sender;
+                    }
                 }
             }
         }

@@ -7,6 +7,7 @@ using Echo.Network.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -15,6 +16,8 @@ namespace Echo.Server
     internal class Client
     {
         public Guid Id { get; } = Guid.NewGuid();
+
+        public IPEndPoint UdpEndpoint { get; set; }
 
         private TcpClient tcpClient;
         private IPacketStream packetStream;
