@@ -3,8 +3,11 @@ using Echo.Server;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Echo
@@ -22,6 +25,7 @@ namespace Echo
         {
             var listener = new TcpListener(IPAddress.Any, NetConfig.TcpPort);
             listener.Start();
+            new Thread(RunUdp).Start();
             Console.WriteLine("Echo server online");
 
             var ch = Guid.NewGuid();
@@ -41,6 +45,33 @@ namespace Echo
                 clients[client.Id] = client;
 
                 client.BeginReading();
+            }
+        }
+
+        private static void RunUdp()
+        {
+            var udp = new Socket(SocketType.Dgram, ProtocolType.Udp);
+            udp.Bind(new IPEndPoint(IPAddress.Any, NetConfig.UdpPort));
+
+            var frame = new byte[8192];
+            while (true)
+            {
+                var remote = new IPEndPoint(IPAddress.Any, 0) as EndPoint;
+                var received = udp.ReceiveFrom(frame, ref remote);
+
+                var memStream = new MemoryStream(frame);
+                var wr = new BinaryReader(memStream);
+                var packetNum = wr.ReadInt32();
+                var packetId = wr.ReadInt32();
+                var packetLen = wr.ReadInt32();
+
+                if (received > packetLen + 12)
+                {
+                    Console.WriteLine($"Warn: UDP: length mismatch, received={received}, packetLength={packetLen}");
+                }
+
+                var packetContent = wr.ReadBytes(packetLen);
+                Console.WriteLine("packet #" + packetNum + " ~" + packetId + " datalen=" + packetLen + ", " + Encoding.UTF8.GetString(packetContent));
             }
         }
 

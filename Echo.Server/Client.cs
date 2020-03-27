@@ -106,7 +106,7 @@ namespace Echo.Server
                     _ = packetStream.WritePacket(new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.InvalidChannel });
                     return;
                 }
-                var reply = new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.Ok, UdpToken = Guid.NewGuid().ToString(), VoiceUrl = $"udp://localhost:{NetConfig.UdpPort}/{channel.Name}" };
+                var reply = new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.Ok, VoiceToken = Id.ToString(), VoiceUrl = $"udp://localhost:{NetConfig.UdpPort}/{channel.Name}" };
                 _ = packetStream.WritePacket(reply);
             });
         }

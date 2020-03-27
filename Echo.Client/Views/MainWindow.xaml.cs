@@ -13,8 +13,6 @@ namespace Echo.Client.Views
 {
     public class MainWindow : Window
     {
-        private const string Host = "localhost";
-
         private ListBox channelList;
         private ListBox messageList;
         private ListBox userList;
@@ -61,8 +59,8 @@ namespace Echo.Client.Views
                 }
                 else if (reply.Status == P11JoinChannelReply.StatusCode.Ok)
                 {
-                    statusLabel.Text = "Connecting voice... [" + reply.VoiceUrl + "; " + reply.UdpToken + "]";
-                    EchoClient.Instance.VoiceClient = new VoiceClient(reply.VoiceUrl, reply.UdpToken);
+                    statusLabel.Text = "Connecting voice... [" + reply.VoiceUrl + "; " + reply.VoiceToken + "]";
+                    EchoClient.Instance.VoiceClient = new VoiceClient(reply.VoiceUrl, reply.VoiceToken);
                     var ok = await EchoClient.Instance.VoiceClient.Connect();
                     if (ok)
                     {
@@ -88,7 +86,7 @@ namespace Echo.Client.Views
             statusLabel.Text = "Connecting...";
             try
             {
-                await EchoClient.Instance.Connect(Host);
+                await EchoClient.Instance.Connect(Constants.Host);
             }
             catch
             {

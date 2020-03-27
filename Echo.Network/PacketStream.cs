@@ -45,7 +45,7 @@ namespace Echo.Network
             return baseStream.WriteAsync(data, 0, data.Length);
         }
 
-        private async Task<byte[]> ReadBytes(int len)
+        public async Task<byte[]> ReadBytes(int len)
         {
             var data = new byte[len];
             await baseStream.ReadAsync(data, 0, len);
@@ -58,7 +58,7 @@ namespace Echo.Network
             return baseStream.WriteAsync(buf, 0, buf.Length);
         }
 
-        private async Task<int> ReadInt()
+        public async Task<int> ReadInt()
         {
             var buf = new byte[4];
             await baseStream.ReadAsync(buf, 0, buf.Length);
