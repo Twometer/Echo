@@ -16,6 +16,7 @@ namespace Echo.Client.Views
         private ListBox messageList;
         private ListBox userList;
         private TextBlock statusLabel;
+        private TextBlock serverLabel;
 
         public MainWindow()
         {
@@ -33,7 +34,17 @@ namespace Echo.Client.Views
             messageList = this.FindControl<ListBox>("MessageList");
             userList = this.FindControl<ListBox>("UserList");
             statusLabel = this.FindControl<TextBlock>("StatusLabel");
+            serverLabel = this.FindControl<TextBlock>("ServerLabel");
             Initialize();
+
+            EchoClient.Instance.ServerInfoChanged += Client_ServerInfoChanged;
+        }
+
+        private void Client_ServerInfoChanged(object sender, System.EventArgs e)
+        {
+            serverLabel.Text = EchoClient.Instance.ServerInfo.ServerName;
+            channelList.Items = EchoClient.Instance.ServerInfo.Channels;
+            userList.Items = EchoClient.Instance.ServerInfo.Users;
         }
 
         private async void Initialize()
@@ -61,7 +72,7 @@ namespace Echo.Client.Views
                 return;
             }
 
-            statusLabel.Text = "Logged in as [user.tag]";
+            statusLabel.Text = "Logged in as " + EchoClient.Instance.UserInfo.Tag;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Echo.Network;
+using Echo.Network.Model;
 using Echo.Network.Packets;
+using Echo.Network.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,13 @@ namespace Echo.Client.Network
     {
         public static EchoClient Instance { get; } = new EchoClient();
 
+        public ServerInfo ServerInfo { get; private set; }
+
+        public UserInfo UserInfo { get; private set; }
+
         public const int Version = 1;
+
+        public event EventHandler ServerInfoChanged;
 
         private TcpClient tcpClient;
 
@@ -60,8 +68,19 @@ namespace Echo.Client.Network
                         waitingResponses.Remove(response);
                     }
                 }
+
+                HandlePacket(packet);
             }
             Console.WriteLine("Lost connection");
+        }
+
+        public async Task<bool> Login(string tag, string password)
+        {
+            var key = Hash.Sha256(password);
+            P05CreateSessionReply reply = await SendRequest<P05CreateSessionReply>(new P04CreateSession() { EchoTag = tag, KeyHash = key });
+            if (reply.Authenticated)
+                UserInfo = new UserInfo() { Tag = tag, Key = key };
+            return reply.Authenticated;
         }
 
         private async Task<T> AwaitPacket<T>() where T : IPacket
@@ -69,6 +88,15 @@ namespace Echo.Client.Network
             var tcs = new TaskCompletionSource<IPacket>();
             waitingResponses.Add((typeof(T), tcs));
             return (T)(await tcs.Task);
+        }
+
+        private void HandlePacket(IPacket packet)
+        {
+            if (packet is P06Sync sync)
+            {
+                ServerInfo = sync.ServerInfo;
+                ServerInfoChanged?.Invoke(this, new EventArgs());
+            }
         }
 
     }

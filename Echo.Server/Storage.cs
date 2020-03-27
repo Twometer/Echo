@@ -8,6 +8,8 @@ namespace Echo.Server
 {
     internal class Storage
     {
+        public static string ServerName { get; set; }
+
         public static IDictionary<string, Account> Accounts { get; } = new ConcurrentDictionary<string, Account>();
 
         public static IDictionary<Guid, Channel> Channels { get; } = new ConcurrentDictionary<Guid, Channel>();

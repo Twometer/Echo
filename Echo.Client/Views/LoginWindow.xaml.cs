@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Echo.Client.Network;
+using Echo.Client.Util;
 using Echo.Network.Packets;
 using Echo.Network.Util;
 using MessageBox.Avalonia;
@@ -51,13 +52,10 @@ namespace Echo.Client.Views
 
         private async void LoginButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            P05CreateSessionReply reply = await EchoClient.Instance.SendRequest<P05CreateSessionReply>(new P04CreateSession() { EchoTag = echoTagBox.Text, KeyHash = Hash.Sha256(passwordBox.Text) });
-            if (reply.Authenticated)
+            if (await EchoClient.Instance.Login(echoTagBox.Text, passwordBox.Text))
                 Close(true);
             else
-            {
-                await MessageBoxManager.GetMessageBoxStandardWindow("Error", "Invalid credentials").Show();
-            }
+                await MsgBox.Show("Error", "Invalid credentials.");
         }
     }
 }

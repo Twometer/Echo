@@ -9,8 +9,6 @@ namespace Echo.Network.Packets
     {
         public int Id => 6;
 
-        public IEnumerable<User> Users { get; set; } = new List<User>();
-
-        public IEnumerable<Channel> Channels { get; set; } = new List<Channel>();
+        public ServerInfo ServerInfo { get; set; }
     }
 }

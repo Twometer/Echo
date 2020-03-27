@@ -30,6 +30,8 @@ namespace Echo
             ch = Guid.NewGuid();
             Storage.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default text channel", Name = "default", Type = Network.Model.Channel.ChannelType.Text };
 
+            Storage.ServerName = "Twometer Echo Test Server";
+
             while (true)
             {
                 var tcp = await listener.AcceptTcpClientAsync();

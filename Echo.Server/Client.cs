@@ -84,7 +84,8 @@ namespace Echo.Server
 
                 _ = packetStream.WritePacket(new P05CreateSessionReply() { Authenticated = authenticated });
                 var users = Storage.Accounts.Values.Select(acc => new User() { Id = acc.Id, EchoTag = acc.Tag, State = User.OnlineState.Online });
-                _ = packetStream.WritePacket(new P06Sync() { Channels = Storage.Channels.Values, Users = users });
+                var info = new ServerInfo() { ServerName = Storage.ServerName, Channels = Storage.Channels.Values, Users = users };
+                _ = packetStream.WritePacket(new P06Sync() { ServerInfo = info });
             });
             packetHandler.Handle<P07ChatMessageOut>(p =>
             {
