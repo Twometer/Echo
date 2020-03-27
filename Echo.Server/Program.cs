@@ -42,10 +42,11 @@ namespace Echo
             }
         }
 
-        internal static void Broadcast(IPacket packet)
+        internal static void Broadcast(Client from, IPacket packet)
         {
             foreach (var kvp in clients)
-                kvp.Value.SendPacket(packet);
+                if (kvp.Key != from.Id)
+                    kvp.Value.SendPacket(packet);
         }
 
         internal static void RemoveClient(Client client)
