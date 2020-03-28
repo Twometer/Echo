@@ -2,8 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Echo.Client.Network;
-using Echo.Client.Network.Voice;
 using Echo.Client.Util;
+using Echo.Client.Voice;
 using Echo.Network.Model;
 using Echo.Network.Packets;
 using Echo.Network.Packets.Tcp;
@@ -19,6 +19,8 @@ namespace Echo.Client.Views
         private ListBox userList;
         private TextBlock statusLabel;
         private TextBlock serverLabel;
+
+        private VoiceManager voiceManager = new VoiceManager();
 
         public MainWindow()
         {
@@ -40,8 +42,14 @@ namespace Echo.Client.Views
             Initialize();
 
             channelList.DoubleTapped += ChannelList_DoubleTapped;
+            this.Closing += MainWindow_Closing;
 
             EchoClient.Instance.ServerInfoChanged += Client_ServerInfoChanged;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            voiceManager.EndStreaming();
         }
 
         private async void ChannelList_DoubleTapped(object sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -65,6 +73,7 @@ namespace Echo.Client.Views
                     var ok = await EchoClient.Instance.VoiceClient.Connect();
                     if (ok)
                     {
+                        voiceManager.BeginStreaming();
                         statusLabel.Text = "Voice connection established";
                     }
                     else

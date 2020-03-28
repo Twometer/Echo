@@ -18,7 +18,7 @@ namespace Echo.Client.Network
         private string token;
 
         private UdpClient udpClient;
-        private IPacketStream packetStream;
+        public IPacketStream PacketStream { get; private set; }
 
         public VoiceClient(string url, string token)
         {
@@ -30,20 +30,20 @@ namespace Echo.Client.Network
         {
             udpClient = new UdpClient();
             udpClient.Connect(Constants.Host, NetConfig.UdpPort);
-            packetStream = new UdpPacketStream(udpClient);
+            PacketStream = new UdpPacketStream(udpClient);
 
-            await packetStream.WritePacket(new U00Handshake() { Token = token });
+            await PacketStream.WritePacket(new U00Handshake() { Token = token });
             return true;
         }
 
         public async Task SetChannel(Channel channel)
         {
-            await packetStream.WritePacket(new U01VoiceConnect() { ChannelId = channel.ChannelId });
+            await PacketStream.WritePacket(new U01VoiceConnect() { ChannelId = channel.ChannelId });
         }
 
         public async Task SendVoiceData(byte[] data)
         {
-            await packetStream.WritePacket(new U02VoiceData() { Data = data });
+            await PacketStream.WritePacket(new U02VoiceData() { Data = data });
         }
 
     }

@@ -10,7 +10,9 @@ namespace Echo.Network.Packets.Registry
     public class UdpPacketRegistry : IPacketRegistry<UdpPacket>
     {
         private static UdpPacket[] registeredPackets = {
-            new U00Handshake()
+            new U00Handshake(),
+            new U01VoiceConnect(),
+            new U02VoiceData()
         };
 
         public Type FindPacketType(int id)

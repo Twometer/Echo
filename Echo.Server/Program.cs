@@ -78,7 +78,7 @@ namespace Echo
                     }
                     else if (packet is U02VoiceData voice)
                     {
-                        var senderClient = clients.Values.First(c => c.UdpEndpoint == packet.Endpoint);
+                        var senderClient = clients.Values.First(c => c.UdpEndpoint.Equals(packet.Endpoint));
                         var channel = senderClient.VoiceChannel;
 
                         if (channel == null)

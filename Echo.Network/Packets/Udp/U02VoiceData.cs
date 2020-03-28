@@ -8,7 +8,7 @@ namespace Echo.Network.Packets.Udp
 {
     public class U02VoiceData : UdpPacket
     {
-        public override int Id => throw new NotImplementedException();
+        public override int Id => 2;
 
         public byte[] Data { get; set; }
 

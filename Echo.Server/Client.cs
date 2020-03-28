@@ -80,6 +80,7 @@ namespace Echo.Server
 
                 var tag = NewTag(p.Nickname);
                 Storage.Accounts[tag] = new Account() { Tag = tag, PasswordHash = p.PasswordHash };
+                Console.WriteLine("Connected: " + tag);
                 _ = packetStream.WritePacket(new P03CreateAccountReply() { Status = P03CreateAccountReply.StatusCode.Ok, EchoTag = tag });
             });
             packetHandler.Handle<P04CreateSession>(p =>

@@ -9,7 +9,7 @@ namespace Echo.Network.Packets.Udp
 {
     public class U01VoiceConnect : UdpPacket
     {
-        public override int Id => throw new NotImplementedException();
+        public override int Id => 1;
 
         public Guid ChannelId { get; set; }
 
