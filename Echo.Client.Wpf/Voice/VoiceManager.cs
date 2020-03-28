@@ -23,9 +23,15 @@ namespace Echo.Client.Wpf.Voice
 
         private volatile bool running = true;
 
+        public bool Muted { get; set; }
+
+        public bool Deafened { get; set; }
+
         public void EndStreaming()
         {
             running = false;
+            waveIn?.Stop();
+            soundOut?.Stop();
         }
 
         public void BeginStreaming()
@@ -55,6 +61,9 @@ namespace Echo.Client.Wpf.Voice
                 var packet = await EchoClient.Instance.VoiceClient.PacketStream.ReadPacket();
                 if (packet is U02VoiceData voice)
                 {
+                    if (Deafened)
+                        continue;
+
                     source.Write(voice.Data, 0, voice.Data.Length);
                     if (soundOut.PlaybackState != PlaybackState.Playing)
                         soundOut.Play();
@@ -79,7 +88,7 @@ namespace Echo.Client.Wpf.Voice
                 emptySamples = 0;
             }
 
-            if (emptySamples > 8)
+            if (Muted || emptySamples > 8)
                 return;
 
             _ = EchoClient.Instance.VoiceClient.SendVoiceData(data);

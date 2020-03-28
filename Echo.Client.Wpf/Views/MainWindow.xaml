@@ -13,7 +13,8 @@
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}">
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Closing="Window_Closing">
     <md:DialogHost IsOpen="True" x:Name="DialogHost">
         <md:DialogHost.DialogContent>
             <Grid Margin="24">
@@ -50,7 +51,28 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <md:Card Padding="8,4" Margin="4" Grid.Row="0" Grid.ColumnSpan="3">
-                <TextBlock x:Name="ServerNameLabel" Style="{DynamicResource MaterialDesignTextBlock}"></TextBlock>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ServerNameLabel" Style="{DynamicResource MaterialDesignTextBlock}" Grid.Column="0" VerticalAlignment="Center"/>
+                    <Button Style="{DynamicResource MaterialDesignToolButton}" Grid.Column="1" Height="32" Width="32" Margin="2">
+                        <md:PackIcon Kind="Settings"/>
+                    </Button>
+                    <ToggleButton x:Name="MuteButton" ToolTip="Mute" Style="{DynamicResource MaterialDesignFlatToggleButton}" Grid.Column="2" Height="32" Width="32" Margin="2" Checked="MuteButton_Checked" Unchecked="MuteButton_Checked">
+                        <ToggleButton.Content>
+                            <md:PackIcon Kind="MicOff"/>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <ToggleButton x:Name="DeafenButton" ToolTip="Deafen" Style="{DynamicResource MaterialDesignFlatToggleButton}" Grid.Column="3" Height="32" Width="32" Margin="0,2,2,2" HorizontalAlignment="Right" Checked="DeafenButton_Checked" Unchecked="DeafenButton_Checked">
+                        <ToggleButton.Content>
+                            <md:PackIcon Kind="VolumeMute"/>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                </Grid>
             </md:Card>
             <ListView x:Name="ChannelList" Grid.Row="1" Grid.Column="0" Margin="5" SelectionChanged="ChannelList_SelectionChanged">
                 <ListView.ItemTemplate>

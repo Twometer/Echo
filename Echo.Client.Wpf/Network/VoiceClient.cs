@@ -26,10 +26,10 @@ namespace Echo.Client.Network
             this.token = token;
         }
 
-        public async Task<bool> Connect()
+        public async Task<bool> Connect(string endpoint)
         {
             udpClient = new UdpClient();
-            udpClient.Connect(Constants.Host, NetConfig.UdpPort);
+            udpClient.Connect(endpoint, NetConfig.UdpPort);
             PacketStream = new UdpPacketStream(udpClient);
 
             await PacketStream.WritePacket(new U00Handshake() { Token = token });

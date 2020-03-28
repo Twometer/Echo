@@ -56,7 +56,15 @@ namespace Echo.Client.Wpf
             ConnectButton.IsEnabled = false;
             RegisterButton.IsEnabled = false;
             ConnectButton.Content = "Connecting...";
-            await EchoClient.Instance.Connect(ServerBox.Text);
+            try
+            {
+                await EchoClient.Instance.Connect(ServerBox.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Server unreachable", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
             StatusLabel.Text = $"Logging in...";
 
             if (await EchoClient.Instance.Login(EchoTagBox.Text, PasswordBox.Password))
@@ -97,7 +105,7 @@ namespace Echo.Client.Wpf
                 {
                     StatusLabel.Text = "Connecting voice... [" + reply.VoiceUrl + "; " + reply.VoiceToken + "]";
                     EchoClient.Instance.VoiceClient = new VoiceClient(reply.VoiceUrl, reply.VoiceToken);
-                    var ok = await EchoClient.Instance.VoiceClient.Connect();
+                    var ok = await EchoClient.Instance.VoiceClient.Connect(ServerBox.Text);
                     if (ok)
                     {
                         voiceManager.BeginStreaming();
@@ -109,6 +117,22 @@ namespace Echo.Client.Wpf
                     }
                 }
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            voiceManager.EndStreaming();
+        }
+
+
+        private void MuteButton_Checked(object sender, RoutedEventArgs e)
+        {
+            voiceManager.Muted = MuteButton.IsChecked.Value;
+        }
+
+        private void DeafenButton_Checked(object sender, RoutedEventArgs e)
+        {
+            voiceManager.Deafened = DeafenButton.IsChecked.Value;
         }
     }
 }
