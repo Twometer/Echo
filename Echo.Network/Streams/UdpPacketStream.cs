@@ -32,7 +32,7 @@ namespace Echo.Network.Streams
                 throw new Exception("Failed to deserialize UDP packet #" + pid);
 
             packet.Read(reader);
-            packet.Sender = message.RemoteEndPoint;
+            packet.Endpoint = message.RemoteEndPoint;
             return packet;
         }
 
@@ -45,7 +45,10 @@ namespace Echo.Network.Streams
                 writer.Write(packet.Id);
                 udpPacket.Write(writer);
                 var message = stream.ToArray();
-                await client.SendAsync(message, message.Length);
+                if (udpPacket.Endpoint == null)
+                    await client.SendAsync(message, message.Length);
+                else
+                    await client.SendAsync(message, message.Length, udpPacket.Endpoint);
             }
             else
             {

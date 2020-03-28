@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -28,7 +29,7 @@ namespace Echo
         {
             var listener = new TcpListener(IPAddress.Any, NetConfig.TcpPort);
             listener.Start();
-            new Thread(RunUdp).Start();
+            RunUdp();
             Console.WriteLine("Echo server online");
 
             var ch = Guid.NewGuid();
@@ -56,21 +57,44 @@ namespace Echo
             var udp = new UdpClient(new IPEndPoint(IPAddress.Any, NetConfig.UdpPort));
             var stream = new UdpPacketStream(udp);
 
+
             while (true)
             {
-                var packet = await stream.ReadPacket() as UdpPacket;
-                if (packet is U00Handshake handshake)
+                try
                 {
-                    var clientId = Guid.Parse(handshake.Token);
-                    if (!clients.ContainsKey(clientId))
+                    var packet = await stream.ReadPacket() as UdpPacket;
+                    if (packet is U00Handshake handshake)
                     {
-                        Console.WriteLine("Invalid access token: " + clientId);
+                        var clientId = Guid.Parse(handshake.Token);
+                        if (!clients.ContainsKey(clientId))
+                        {
+                            Console.WriteLine("Invalid access token: " + clientId);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Endpoint);
+                            clients[clientId].UdpEndpoint = packet.Endpoint;
+                        }
                     }
-                    else
+                    else if (packet is U02VoiceData voice)
                     {
-                        Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Sender);
-                        clients[clientId].UdpEndpoint = packet.Sender;
+                        var senderClient = clients.Values.First(c => c.UdpEndpoint == packet.Endpoint);
+                        var channel = senderClient.VoiceChannel;
+
+                        if (channel == null)
+                            throw new Exception("Protocol violation: no such channel for voice data");
+
+                        var clientsInChannel = clients.Values.Where(c => c.VoiceChannel?.ChannelId == channel.ChannelId);
+                        foreach(var c in clientsInChannel)
+                        {
+                            var forwarded = new U02VoiceData() { Data = voice.Data, Endpoint = c.UdpEndpoint };
+                            await stream.WritePacket(forwarded);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Udp: Error: " + e.Message);
                 }
             }
         }

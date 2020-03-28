@@ -1,5 +1,6 @@
 ﻿using Echo.Network;
 using Echo.Network.Base;
+using Echo.Network.Model;
 using Echo.Network.Packets.Udp;
 using Echo.Network.Streams;
 using System;
@@ -9,7 +10,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Echo.Client.Network.Voice
+namespace Echo.Client.Network
 {
     public class VoiceClient
     {
@@ -33,6 +34,16 @@ namespace Echo.Client.Network.Voice
 
             await packetStream.WritePacket(new U00Handshake() { Token = token });
             return true;
+        }
+
+        public async Task SetChannel(Channel channel)
+        {
+            await packetStream.WritePacket(new U01VoiceConnect() { ChannelId = channel.ChannelId });
+        }
+
+        public async Task SendVoiceData(byte[] data)
+        {
+            await packetStream.WritePacket(new U02VoiceData() { Data = data });
         }
 
     }

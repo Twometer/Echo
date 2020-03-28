@@ -19,6 +19,10 @@ namespace Echo.Server
 
         public IPEndPoint UdpEndpoint { get; set; }
 
+        public Account Account { get; private set; }
+
+        public Channel VoiceChannel { get; private set; }
+
         private TcpClient tcpClient;
         private IPacketStream packetStream;
         private PacketHandler packetHandler;
@@ -28,8 +32,6 @@ namespace Echo.Server
         private bool authenticated;
 
         private Random random = new Random();
-
-        private Account currentAccount;
 
         public Client(TcpClient tcpClient)
         {
@@ -92,7 +94,7 @@ namespace Echo.Server
                     var account = Storage.Accounts[p.EchoTag];
                     if (SequenceEqual(account.PasswordHash, p.KeyHash))
                     {
-                        currentAccount = account;
+                        Account = account;
                         return true;
                     }
                     return false;
@@ -114,7 +116,7 @@ namespace Echo.Server
                 if (!Storage.Channels.ContainsKey(p.ChannelId))
                     throw new Exception("Protocol error [07]: Channel does not exist");
 
-                var message = new Message() { SendDate = DateTime.Now, ChannelId = p.ChannelId, Content = p.Content, MessageId = Guid.NewGuid(), SenderId = currentAccount.Id };
+                var message = new Message() { SendDate = DateTime.Now, ChannelId = p.ChannelId, Content = p.Content, MessageId = Guid.NewGuid(), SenderId = Account.Id };
                 _ = packetStream.WritePacket(new P08ChatMessageOutReply() { Nonce = p.Nonce, MessageId = message.MessageId });
                 Program.Broadcast(this, new P09ChatMessageIn() { Message = message });
             });
@@ -130,6 +132,8 @@ namespace Echo.Server
                 }
                 var reply = new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.Ok, VoiceToken = Id.ToString(), VoiceUrl = $"udp://localhost:{NetConfig.UdpPort}/{channel.Name}" };
                 _ = packetStream.WritePacket(reply);
+
+                VoiceChannel = channel;
             });
         }
 

@@ -8,7 +8,7 @@ namespace Echo.Network.Base
 {
     public abstract class UdpPacket : IPacket
     {
-        public IPEndPoint Sender { get; set; }
+        public IPEndPoint Endpoint { get; set; }
 
         public abstract int Id { get; }
 

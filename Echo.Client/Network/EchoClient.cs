@@ -1,4 +1,4 @@
-﻿using Echo.Client.Network.Voice;
+﻿using Echo.Client.Network;
 using Echo.Network;
 using Echo.Network.Base;
 using Echo.Network.Model;
