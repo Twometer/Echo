@@ -2,6 +2,7 @@
 using Echo.Client.Wpf.Voice;
 using Echo.Network.Model;
 using Echo.Network.Packets.Tcp;
+using Echo.Network.Util;
 using MaterialDesignThemes.Wpf;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,8 @@ namespace Echo.Client.Wpf
             EchoClient.Instance.ServerInfoChanged += EchoClient_ServerInfoChanged;
         }
 
+        private bool loginMode = true;
+
         private void EchoClient_ServerInfoChanged(object sender, EventArgs e)
         {
             ServerNameLabel.Text = EchoClient.Instance.ServerInfo.ServerName;
@@ -53,38 +56,93 @@ namespace Echo.Client.Wpf
 
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            ConnectButton.IsEnabled = false;
-            RegisterButton.IsEnabled = false;
-            ConnectButton.Content = "Connecting...";
-            try
+            if (loginMode)
             {
-                await EchoClient.Instance.Connect(ServerBox.Text);
-            }
-            catch
-            {
-                MessageBox.Show("Server unreachable", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
 
-            StatusLabel.Text = $"Logging in...";
+                ConnectButton.IsEnabled = false;
+                RegisterButton.IsEnabled = false;
+                ConnectButton.Content = "Connecting...";
+                try
+                {
+                    await EchoClient.Instance.Connect(ServerBox.Text);
+                }
+                catch
+                {
+                    MessageBox.Show("Server unreachable", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
-            if (await EchoClient.Instance.Login(EchoTagBox.Text, PasswordBox.Password))
-            {
-                StatusLabel.Text = $"Logged in as {EchoClient.Instance.UserInfo.Tag}";
-                DialogHost.CurrentSession.Close();
+                StatusLabel.Text = $"Logging in...";
+
+                if (await EchoClient.Instance.Login(EchoTagBox.Text, PasswordBox.Password))
+                {
+                    StatusLabel.Text = $"Logged in as {EchoClient.Instance.UserInfo.Tag}";
+                    DialogHost.CurrentSession.Close();
+                }
+                else
+                {
+                    StatusLabel.Text = $"Connected.";
+                    MessageBox.Show("Invalid credentials", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ConnectButton.IsEnabled = true;
+                    RegisterButton.IsEnabled = true;
+                    ConnectButton.Content = "Login";
+                }
             }
             else
             {
-                StatusLabel.Text = $"Connected.";
-                MessageBox.Show("Invalid credentials", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ConnectButton.IsEnabled = false;
+                RegisterButton.IsEnabled = false;
+                ConnectButton.Content = "Connecting...";
+                try
+                {
+                    await EchoClient.Instance.Connect(ServerBox.Text);
+                }
+                catch
+                {
+                    MessageBox.Show("Server unreachable", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                StatusLabel.Text = $"Creating account...";
+
+                P03CreateAccountReply reply = await EchoClient.Instance.SendRequest<P03CreateAccountReply>(new P02CreateAccount() { Nickname = EchoTagBox.Text, PasswordHash = Hash.Sha256(PasswordBox.Password) });
+                if (reply.Status == P03CreateAccountReply.StatusCode.Ok)
+                {
+                    MessageBox.Show("Welcome to Echo! Your tag is: " + reply.EchoTag + ". You can now log in.", "Account created", MessageBoxButton.OK, MessageBoxImage.Information);
+                    EchoTagBox.Text = reply.EchoTag;
+                    ConnectButton.IsEnabled = true;
+                    RegisterButton.IsEnabled = true;
+                    RegisterButton_Click(null, null);
+                    return;
+                }
+                else if (reply.Status == P03CreateAccountReply.StatusCode.InvalidName)
+                {
+                    MessageBox.Show("Invalid account name. Please don't use hashtags and names ", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else if (reply.Status == P03CreateAccountReply.StatusCode.NameTaken)
+                {
+                    MessageBox.Show("Well, this should not happen. Apparently over 10k users already chose this username, so please choose a different one.", "lol wut", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
                 ConnectButton.IsEnabled = true;
                 RegisterButton.IsEnabled = true;
-                ConnectButton.Content = "Connect";
+                ConnectButton.Content = "Create account";
             }
         }
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (loginMode)
+            {
+                loginMode = false;
+                ConnectButton.Content = "Register";
+                RegisterButton.Content = "Back to login";
+                PasswordConfirmBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                loginMode = true;
+                ConnectButton.Content = "Login";
+                RegisterButton.Content = "No account?";
+                PasswordConfirmBox.Visibility = Visibility.Collapsed;
+            }
         }
 
         private async void ChannelList_SelectionChanged(object sender, SelectionChangedEventArgs e)

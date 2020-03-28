@@ -85,10 +85,13 @@ namespace Echo
                             throw new Exception("Protocol violation: no such channel for voice data");
 
                         var clientsInChannel = clients.Values.Where(c => c.VoiceChannel?.ChannelId == channel.ChannelId);
-                        foreach(var c in clientsInChannel)
+                        foreach (var c in clientsInChannel)
                         {
-                            var forwarded = new U02VoiceData() { Data = voice.Data, Endpoint = c.UdpEndpoint };
-                            await stream.WritePacket(forwarded);
+                            if (c.Id != senderClient.Id)
+                            {
+                                var forwarded = new U02VoiceData() { Data = voice.Data, Endpoint = c.UdpEndpoint };
+                                await stream.WritePacket(forwarded);
+                            }
                         }
                     }
                 }

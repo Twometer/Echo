@@ -25,6 +25,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="220"/>
@@ -34,9 +35,10 @@
                 <TextBox x:Name="ServerBox" Grid.Column="1" Grid.Row="1" Margin="8,5" md:HintAssist.Hint="Server" VerticalAlignment="Center" Text="localhost"/>
                 <TextBox x:Name="EchoTagBox" Grid.Column="1" Grid.Row="2" Margin="8,5" md:HintAssist.Hint="Echo Tag" VerticalAlignment="Center"/>
                 <PasswordBox x:Name="PasswordBox" Grid.Column="1" Grid.Row="3" Margin="8,5" md:HintAssist.Hint="Password" VerticalAlignment="Center"/>
+                <PasswordBox x:Name="PasswordConfirmBox" Grid.Column="1" Grid.Row="4" Margin="8,5" md:HintAssist.Hint="Confirm password" VerticalAlignment="Center" Visibility="Collapsed"/>
 
-                <Button x:Name="ConnectButton" Grid.Row="4" Margin="16,16,16,8" Grid.ColumnSpan="2" Click="ConnectButton_Click">Connect</Button>
-                <Button x:Name="RegisterButton" Grid.Row="5" Margin="16,0" Grid.ColumnSpan="2" Style="{DynamicResource MaterialDesignFlatButton}" Click="RegisterButton_Click">No account?</Button>
+                <Button x:Name="ConnectButton" Grid.Row="5" Margin="16,16,16,8" Grid.ColumnSpan="2" Click="ConnectButton_Click">Login</Button>
+                <Button x:Name="RegisterButton" Grid.Row="6" Margin="16,0" Grid.ColumnSpan="2" Style="{DynamicResource MaterialDesignFlatButton}" Click="RegisterButton_Click">No account?</Button>
             </Grid>
         </md:DialogHost.DialogContent>
         <Grid>
