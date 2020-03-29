@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Echo.Client.Wpf"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Echo 0.1.0" Height="450" Width="800"
+        Title="Echo 0.1.0" Height="520" Width="700"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -26,6 +26,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="220"/>
@@ -37,8 +38,10 @@
                 <PasswordBox x:Name="PasswordBox" Grid.Column="1" Grid.Row="3" Margin="8,5" md:HintAssist.Hint="Password" VerticalAlignment="Center"/>
                 <PasswordBox x:Name="PasswordConfirmBox" Grid.Column="1" Grid.Row="4" Margin="8,5" md:HintAssist.Hint="Confirm password" VerticalAlignment="Center" Visibility="Collapsed"/>
 
-                <Button x:Name="ConnectButton" Grid.Row="5" Margin="16,16,16,8" Grid.ColumnSpan="2" Click="ConnectButton_Click">Login</Button>
-                <Button x:Name="RegisterButton" Grid.Row="6" Margin="16,0" Grid.ColumnSpan="2" Style="{DynamicResource MaterialDesignFlatButton}" Click="RegisterButton_Click">No account?</Button>
+                <CheckBox Content="Remember me" Grid.Row="5" Grid.ColumnSpan="2" Margin="8,8,16,4" Visibility="Collapsed"/>
+
+                <Button x:Name="ConnectButton" Grid.Row="6" Margin="16,16,16,8" Grid.ColumnSpan="2" Click="ConnectButton_Click">Login</Button>
+                <Button x:Name="RegisterButton" Grid.Row="7" Margin="16,0" Grid.ColumnSpan="2" Style="{DynamicResource MaterialDesignFlatButton}" Click="RegisterButton_Click">No account?</Button>
             </Grid>
         </md:DialogHost.DialogContent>
         <Grid>
@@ -61,7 +64,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="ServerNameLabel" Style="{DynamicResource MaterialDesignTextBlock}" Grid.Column="0" VerticalAlignment="Center"/>
-                    <Button Style="{DynamicResource MaterialDesignToolButton}" Grid.Column="1" Height="32" Width="32" Margin="2">
+                    <Button Style="{DynamicResource MaterialDesignToolButton}" Grid.Column="1" Height="32" Width="32" Margin="2" ToolTip="Settings">
                         <md:PackIcon Kind="Settings"/>
                     </Button>
                     <ToggleButton x:Name="MuteButton" ToolTip="Mute" Style="{DynamicResource MaterialDesignFlatToggleButton}" Grid.Column="2" Height="32" Width="32" Margin="2" Checked="MuteButton_Checked" Unchecked="MuteButton_Checked">
