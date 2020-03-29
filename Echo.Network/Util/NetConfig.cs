@@ -8,5 +8,6 @@ namespace Echo.Network
     {
         public const int TcpPort = 13371;
         public const int UdpPort = 13372;
+        public const int ProtoVersion = 1;
     }
 }

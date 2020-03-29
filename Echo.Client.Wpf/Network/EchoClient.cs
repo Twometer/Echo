@@ -1,4 +1,5 @@
 ﻿using Echo.Client.Network;
+using Echo.Common;
 using Echo.Network;
 using Echo.Network.Base;
 using Echo.Network.Model;
@@ -25,14 +26,10 @@ namespace Echo.Client.Network
 
         public VoiceClient VoiceClient { get; set; }
 
-        public const int Version = 1;
-
         public event EventHandler ServerInfoChanged;
 
         private TcpClient tcpClient;
-
         private IPacketStream packetStream;
-
         private IList<(Type type, TaskCompletionSource<IPacket> tcs)> waitingResponses = new List<(Type type, TaskCompletionSource<IPacket> tcs)>();
 
         public async Task Connect(string endpoint)
@@ -44,7 +41,7 @@ namespace Echo.Client.Network
             await tcpClient.ConnectAsync(endpoint, NetConfig.TcpPort);
             packetStream = new TcpPacketStream(tcpClient.GetStream());
             BeginReading();
-            await SendPacket(new P00Handshake() { Version = Version });
+            await SendPacket(new P00Handshake() { Version = NetConfig.ProtoVersion });
         }
 
         public async Task<T> SendRequest<T>(IPacket packet) where T : IPacket
@@ -77,7 +74,7 @@ namespace Echo.Client.Network
 
                 HandlePacket(packet);
             }
-            Console.WriteLine("Lost connection");
+            Log.Warn("Connection to the server lost");
         }
 
         public async Task<bool> Login(string tag, string password)

@@ -1,4 +1,5 @@
-﻿using Echo.Network;
+﻿using Echo.Common;
+using Echo.Network;
 using Echo.Network.Base;
 using Echo.Network.Model;
 using Echo.Network.Packets;
@@ -48,14 +49,13 @@ namespace Echo.Server
                 while (true)
                 {
                     var packet = await packetStream.ReadPacket();
-                    Console.WriteLine("Received packet " + packet.GetType().Name);
                     if (packet != null)
                         packetHandler.Process(packet);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Log.Error("TCP_RECEIVE", e);
                 tcpClient.Close();
                 Program.RemoveClient(this);
             }
@@ -71,7 +71,8 @@ namespace Echo.Server
             packetHandler.Handle<P02CreateAccount>(p =>
             {
                 if (this.authenticated)
-                    throw new Exception("Protocol error [02]: Already logged in");
+                    throw new ProtocolViolationException("Protocol error [02]: Already logged in");
+
                 if (string.IsNullOrWhiteSpace(p.Nickname) || p.Nickname.Length <= 2 || p.Nickname.Contains("#"))
                 {
                     _ = packetStream.WritePacket(new P03CreateAccountReply() { Status = P03CreateAccountReply.StatusCode.InvalidName });
@@ -79,20 +80,23 @@ namespace Echo.Server
                 }
 
                 var tag = NewTag(p.Nickname);
-                Storage.Accounts[tag] = new Account() { Tag = tag, PasswordHash = p.PasswordHash };
-                Console.WriteLine("Connected: " + tag);
+                Storage.Instance.Accounts[tag] = new Account() { Tag = tag, PasswordHash = p.PasswordHash };
+                Storage.Save();
+
+                Log.Info($"{tag} created an account");
+
                 _ = packetStream.WritePacket(new P03CreateAccountReply() { Status = P03CreateAccountReply.StatusCode.Ok, EchoTag = tag });
             });
             packetHandler.Handle<P04CreateSession>(p =>
             {
                 if (this.authenticated)
-                    throw new Exception("Protocol error [04]: Already logged in");
+                    throw new ProtocolViolationException("Protocol error [04]: Already logged in");
 
                 bool CheckAuthenticated()
                 {
-                    if (!Storage.Accounts.ContainsKey(p.EchoTag))
+                    if (!Storage.Instance.Accounts.ContainsKey(p.EchoTag))
                         return false;
-                    var account = Storage.Accounts[p.EchoTag];
+                    var account = Storage.Instance.Accounts[p.EchoTag];
                     if (SequenceEqual(account.PasswordHash, p.KeyHash))
                     {
                         Account = account;
@@ -108,14 +112,14 @@ namespace Echo.Server
                 if (!authenticated)
                     return;
 
-                var users = Storage.Accounts.Values.Select(acc => new User() { Id = acc.Id, EchoTag = acc.Tag, State = User.OnlineState.Online });
-                var info = new ServerInfo() { ServerName = Storage.ServerName, Channels = Storage.Channels.Values, Users = users };
+                var users = Storage.Instance.Accounts.Values.Select(acc => new User() { Id = acc.Id, EchoTag = acc.Tag, State = User.OnlineState.Online });
+                var info = new ServerInfo() { ServerName = Storage.Instance.ServerName, Channels = Storage.Instance.Channels.Values, Users = users };
                 _ = packetStream.WritePacket(new P06Sync() { ServerInfo = info });
             });
             packetHandler.Handle<P07ChatMessageOut>(p =>
             {
-                if (!Storage.Channels.ContainsKey(p.ChannelId))
-                    throw new Exception("Protocol error [07]: Channel does not exist");
+                if (!Storage.Instance.Channels.ContainsKey(p.ChannelId))
+                    throw new ProtocolViolationException("Protocol error [07]: Channel does not exist");
 
                 var message = new Message() { SendDate = DateTime.Now, ChannelId = p.ChannelId, Content = p.Content, MessageId = Guid.NewGuid(), SenderId = Account.Id };
                 _ = packetStream.WritePacket(new P08ChatMessageOutReply() { Nonce = p.Nonce, MessageId = message.MessageId });
@@ -123,9 +127,10 @@ namespace Echo.Server
             });
             packetHandler.Handle<P10JoinChannel>(p =>
             {
-                if (!Storage.Channels.ContainsKey(p.ChannelId))
-                    throw new Exception("Protocol error [10]: Channel does not exist");
-                var channel = Storage.Channels[p.ChannelId];
+                if (!Storage.Instance.Channels.ContainsKey(p.ChannelId))
+                    throw new ProtocolViolationException("Protocol error [10]: Channel does not exist");
+
+                var channel = Storage.Instance.Channels[p.ChannelId];
                 if (channel.Type != Channel.ChannelType.Voice)
                 {
                     _ = packetStream.WritePacket(new P11JoinChannelReply() { Status = P11JoinChannelReply.StatusCode.InvalidChannel });
@@ -144,7 +149,7 @@ namespace Echo.Server
             do
             {
                 tag = $"{name}#{RandomId()}";
-            } while (Storage.Accounts.ContainsKey(tag));
+            } while (Storage.Instance.Accounts.ContainsKey(tag));
             return tag;
         }
 

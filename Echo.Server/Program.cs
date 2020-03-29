@@ -1,4 +1,5 @@
-﻿using Echo.Network;
+﻿using Echo.Common;
+using Echo.Network;
 using Echo.Network.Base;
 using Echo.Network.Packets.Udp;
 using Echo.Network.Streams;
@@ -29,21 +30,32 @@ namespace Echo
         {
             var listener = new TcpListener(IPAddress.Any, NetConfig.TcpPort);
             listener.Start();
+            Log.Info("TCP packet listener online");
             RunUdp();
-            Console.WriteLine("Echo server online");
 
-            var ch = Guid.NewGuid();
-            Storage.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default voice channel", Name = "voice", Type = Network.Model.Channel.ChannelType.Voice };
+            Log.Info("Loading storage data...");
+            Storage.Load();
 
-            ch = Guid.NewGuid();
-            Storage.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default text channel", Name = "default", Type = Network.Model.Channel.ChannelType.Text };
+            if (Storage.Instance.Channels.Count == 0)
+            {
+                Log.Info("First startup, creating default settings...");
 
-            Storage.ServerName = "Twometer Echo Test Server";
+                var ch = Guid.NewGuid();
+                Storage.Instance.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default voice channel", Name = "voice", Type = Network.Model.Channel.ChannelType.Voice };
+
+                ch = Guid.NewGuid();
+                Storage.Instance.Channels[ch] = new Network.Model.Channel() { ChannelId = ch, Description = "Default text channel", Name = "default", Type = Network.Model.Channel.ChannelType.Text };
+
+                Storage.Instance.ServerName = "An Echo Server";
+                Storage.Save();
+            }
+
+            Log.Info("Initialization complete");
 
             while (true)
             {
                 var tcp = await listener.AcceptTcpClientAsync();
-                Console.WriteLine("Incoming connection from " + tcp.Client.RemoteEndPoint);
+                Log.Info($"Incoming connection from {tcp.Client.RemoteEndPoint}");
 
                 var client = new Client(tcp);
                 clients[client.Id] = client;
@@ -56,7 +68,7 @@ namespace Echo
         {
             var udp = new UdpClient(new IPEndPoint(IPAddress.Any, NetConfig.UdpPort));
             var stream = new UdpPacketStream(udp);
-
+            Log.Info("UDP packet listener online");
 
             while (true)
             {
@@ -68,11 +80,11 @@ namespace Echo
                         var clientId = Guid.Parse(handshake.Token);
                         if (!clients.ContainsKey(clientId))
                         {
-                            Console.WriteLine("Invalid access token: " + clientId);
+                            throw new ProtocolViolationException($"Invalid access token: {clientId}");
                         }
                         else
                         {
-                            Console.WriteLine("Client " + handshake.Token + "'s UDP endpoint is " + packet.Endpoint);
+                            Log.Info($"Client {handshake.Token}'s UDP endpoint is {packet.Endpoint}");
                             clients[clientId].UdpEndpoint = packet.Endpoint;
                         }
                     }
@@ -82,7 +94,7 @@ namespace Echo
                         var channel = senderClient.VoiceChannel;
 
                         if (channel == null)
-                            throw new Exception("Protocol violation: no such channel for voice data");
+                            throw new ProtocolViolationException("Received voice data from client that does not have a channel");
 
                         var clientsInChannel = clients.Values.Where(c => c.VoiceChannel?.ChannelId == channel.ChannelId);
                         foreach (var c in clientsInChannel)
@@ -97,7 +109,7 @@ namespace Echo
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Udp: Error: " + e.Message);
+                    Log.Error("UDP_RECEIVE", e);
                 }
             }
         }

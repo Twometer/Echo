@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Echo.Common\Echo.Common.csproj" />
     <ProjectReference Include="..\Echo.Network\Echo.Network.csproj" />
   </ItemGroup>
 
