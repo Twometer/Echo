@@ -17,6 +17,9 @@ namespace Echo.Client.Network
         private string url;
         private string token;
 
+        private uint outPacketNum;
+        private uint inPacketNum;
+
         private UdpClient udpClient;
         public IPacketStream PacketStream { get; private set; }
 
@@ -43,7 +46,18 @@ namespace Echo.Client.Network
 
         public async Task SendVoiceData(byte[] data)
         {
-            await PacketStream.WritePacket(new U02VoiceData() { Data = data });
+            await PacketStream.WritePacket(new U02VoiceData(outPacketNum) { Data = data });
+            outPacketNum++;
+        }
+
+        public bool ValidatePacket(U02VoiceData packet)
+        {
+            if (packet.PacketNumber > inPacketNum)
+            {
+                inPacketNum = packet.PacketNumber;
+                return true;
+            }
+            return false;
         }
 
     }

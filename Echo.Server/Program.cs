@@ -91,17 +91,18 @@ namespace Echo
                     else if (packet is U02VoiceData voice)
                     {
                         var senderClient = clients.Values.First(c => c.UdpEndpoint.Equals(packet.Endpoint));
-                        var channel = senderClient.VoiceChannel;
+                        var channel = senderClient?.VoiceChannel;
 
                         if (channel == null)
                             throw new ProtocolViolationException("Received voice data from client that does not have a channel");
 
-                        var clientsInChannel = clients.Values.Where(c => c.VoiceChannel?.ChannelId == channel.ChannelId);
+                        var clientsInChannel = clients.Values.Where(c => c != null && c.VoiceChannel != null && c.VoiceChannel.ChannelId == channel.ChannelId);
                         foreach (var c in clientsInChannel)
                         {
-                            if (c.Id != senderClient.Id)
+                            if (c.Id != senderClient.Id && c.UdpEndpoint != null)
                             {
-                                var forwarded = new U02VoiceData() { Data = voice.Data, Endpoint = c.UdpEndpoint };
+                                var forwarded = new U02VoiceData(c.PacketNum) { Data = voice.Data, Endpoint = c.UdpEndpoint };
+                                c.PacketNum++;
                                 await stream.WritePacket(forwarded);
                             }
                         }

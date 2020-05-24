@@ -18,8 +18,7 @@ namespace Echo.Client.Wpf.Voice
     {
         private WaveIn waveIn;
         private WasapiOut soundOut;
-
-        private WriteableBufferingSource source;
+        private WriteableBufferingSource outSource;
 
         private volatile bool running = true;
 
@@ -36,19 +35,26 @@ namespace Echo.Client.Wpf.Voice
 
         public void BeginStreaming()
         {
-            waveIn = new WaveIn(new WaveFormat(44100, 16, 1)); 
-            waveIn.Device = WaveInDevice.DefaultDevice;
+            var device = WaveInDevice.DefaultDevice;
+            var waveFormat = device.SupportedFormats.OrderBy(d => Math.Abs(d.SampleRate - 44100)).First(); // Select wave format that is closest to the 44100 Hz target sampling range
+
+            waveIn = new WaveIn(waveFormat);
+            waveIn.Device = device;
             waveIn.Latency = 25;
             waveIn.Initialize();
-            waveIn.DataAvailable += WaveIn_DataAvailable;
-            
             waveIn.Start();
 
-            source = new WriteableBufferingSource(waveIn.WaveFormat);
+            var inSource = new SoundInSource(waveIn);
+            inSource.ChangeSampleRate(44100)
+                .ToSampleSource()
+                .ToWaveSource(16);
+            inSource.DataAvailable += WaveIn_DataAvailable;
+
+            outSource = new WriteableBufferingSource(waveIn.WaveFormat);
 
             soundOut = new WasapiOut();
             soundOut.Latency = 25;
-            soundOut.Initialize(source);
+            soundOut.Initialize(outSource);
             soundOut.Play();
 
             Receiver();
@@ -59,12 +65,12 @@ namespace Echo.Client.Wpf.Voice
             while (running)
             {
                 var packet = await EchoClient.Instance.VoiceClient.PacketStream.ReadPacket();
-                if (packet is U02VoiceData voice)
+                if (packet is U02VoiceData voice && EchoClient.Instance.VoiceClient.ValidatePacket(voice))
                 {
                     if (Deafened)
                         continue;
 
-                    source.Write(voice.Data, 0, voice.Data.Length);
+                    outSource.Write(voice.Data, 0, voice.Data.Length);
                     if (soundOut.PlaybackState != PlaybackState.Playing)
                         soundOut.Play();
                 }
@@ -100,11 +106,19 @@ namespace Echo.Client.Wpf.Voice
 
             var ms = new BinaryReader(new MemoryStream(pcm));
             for (int i = 0; i < pcm.Length / 2; i++)
-                avg += Math.Abs(ms.ReadInt16());
+                avg += Abs(ms.ReadInt16());
 
             avg /= pcm.Length / 2;
 
             return avg;
         }
+
+        private float Abs(short s)
+        {
+            if (s == short.MinValue)
+                s++;
+            return Math.Abs(s);
+        }
+
     }
 }

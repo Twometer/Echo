@@ -115,11 +115,11 @@ namespace Echo.Client.Wpf
                 }
                 else if (reply.Status == P03CreateAccountReply.StatusCode.InvalidName)
                 {
-                    MessageBox.Show("Invalid account name. Please don't use hashtags and names ", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Invalid account name. Please don't use spaces and names longer than 2 characters", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else if (reply.Status == P03CreateAccountReply.StatusCode.NameTaken)
                 {
-                    MessageBox.Show("Well, this should not happen. Apparently over 10k users already chose this username, so please choose a different one.", "lol wut", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show("Sorry, this account name is already taken", "Yeet", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 }
                 ConnectButton.IsEnabled = true;
                 RegisterButton.IsEnabled = true;

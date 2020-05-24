@@ -24,6 +24,8 @@ namespace Echo.Server
 
         public Channel VoiceChannel { get; private set; }
 
+        public uint PacketNum { get; set; }
+
         private TcpClient tcpClient;
         private IPacketStream packetStream;
         private PacketHandler packetHandler;
@@ -73,14 +75,20 @@ namespace Echo.Server
                 if (this.authenticated)
                     throw new ProtocolViolationException("Protocol error [02]: Already logged in");
 
-                if (string.IsNullOrWhiteSpace(p.Nickname) || p.Nickname.Length <= 2 || p.Nickname.Contains("#"))
+                var tag = p.Nickname;
+                if (string.IsNullOrWhiteSpace(p.Nickname) || p.Nickname.Length <= 2 || p.Nickname.Contains(" "))
                 {
                     _ = packetStream.WritePacket(new P03CreateAccountReply() { Status = P03CreateAccountReply.StatusCode.InvalidName });
                     return;
                 }
 
-                var tag = NewTag(p.Nickname);
-                Storage.Instance.Accounts[tag] = new Account() { Tag = tag, PasswordHash = p.PasswordHash };
+                if (Storage.Instance.Accounts.ContainsKey(p.Nickname))
+                {
+                    _ = packetStream.WritePacket(new P03CreateAccountReply() { Status = P03CreateAccountReply.StatusCode.NameTaken });
+                    return;
+                }
+
+                Storage.Instance.Accounts[tag] = new Account() { Id = Guid.NewGuid(), Tag = tag, PasswordHash = p.PasswordHash };
                 Storage.Save();
 
                 Log.Info($"{tag} created an account");
